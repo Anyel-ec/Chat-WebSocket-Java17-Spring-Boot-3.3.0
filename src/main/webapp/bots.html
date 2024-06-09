@@ -4,57 +4,45 @@
 
     <script src="resources/js/sockjs-0.3.4.js"></script>
     <script src="resources/js/stomp.js"></script>
-
     <script type="text/javascript">
-
         var stompClient = null;
-
-        function setConnected(connected) {
-
+        function setConnected(connected) { // establece la conexión con el servidor
             document.getElementById('connect').disabled = connected;
             document.getElementById('disconnect').disabled = !connected;
             document.getElementById('conversationDiv').style.visibility = connected ? 'visible' : 'hidden';
             document.getElementById('response').innerHTML = '';
         }
-
-        function connect() {
-
+        function connect() { // conecta con el servidor
             var socket = new SockJS('/chatwithbots');
             stompClient = Stomp.over(socket);
-
-            stompClient.connect({}, function(frame) {
-
+            stompClient.connect({}, function(frame) { // conecta con el servidor
                 setConnected(true);
-                console.log('Connected: ' + frame);
+                console.log('Connected: ' + frame); // establece la conexión
                 stompClient.subscribe('/topic/pushmessages', function(messageOutput) {
-
+                    // suscribe al canal /topic/pushmessages
                     showMessageOutput(JSON.parse(messageOutput.body));
                 });
             });
         }
 
-        function disconnect() {
-
-            if(stompClient != null) {
-                stompClient.disconnect();
+        function disconnect() { // desconecta del servidor
+            if(stompClient != null) { // si el cliente stomp no es nulo
+                stompClient.disconnect(); // desconecta del servidor
             }
-
-            setConnected(false);
-            console.log("Disconnected");
+            setConnected(false); // establece la conexión en falso
+            console.log("Disconnected"); // imprime en consola
         }
-
-        function sendMessage() {
-
+        function sendMessage() { // envía un mensaje
             var from = document.getElementById('from').value;
             var text = document.getElementById('text').value;
+            // envía un mensaje al servidor a través del canal /app/chatwithbots
             stompClient.send("/app/chatwithbots", {}, JSON.stringify({'from':from, 'text':text}));
         }
-
-        function showMessageOutput(messageOutput) {
-
+        function showMessageOutput(messageOutput) { // muestra un mensaje
             var response = document.getElementById('response');
             var p = document.createElement('p');
             p.style.wordWrap = 'break-word';
+            // muestra el mensaje en el formato: from: text (time)
             p.appendChild(document.createTextNode(messageOutput.from + ": " + messageOutput.text + " (" + messageOutput.time + ")"));
             response.appendChild(p);
         }
@@ -66,8 +54,6 @@
 <body onload="disconnect()">
 
 <div>
-
-
     <div>
         <input type="text" id="from" placeholder="Choose a nickname"/>
     </div>

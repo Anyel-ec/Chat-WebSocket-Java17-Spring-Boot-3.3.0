@@ -6,55 +6,51 @@
     <script src="resources/js/stomp.js"></script>
 
     <script type="text/javascript">
-
         var stompClient = null;
-
-        function setConnected(connected) {
-
+        function setConnected(connected) {        // establece la conexión con el servidor
             document.getElementById('connect').disabled = connected;
             document.getElementById('disconnect').disabled = !connected;
             document.getElementById('conversationDiv').style.visibility = connected ? 'visible' : 'hidden';
             document.getElementById('response').innerHTML = '';
         }
-
-        function connect() {
-
+        function connect() { // conecta con el servidor
+            // crea un socket
             var socket = new SockJS('/chat');
+            // crea un cliente stomp
             stompClient = Stomp.over(socket);
-
+            // conecta con el servidor
             stompClient.connect({}, function (frame) {
-
+                // establece la conexión
                 setConnected(true);
                 console.log('Connected: ' + frame);
+                // suscribe al canal /topic/messages
                 stompClient.subscribe('/topic/messages', function (messageOutput) {
-
                     showMessageOutput(JSON.parse(messageOutput.body));
                 });
             });
         }
-
+        // desconecta del servidor
         function disconnect() {
-
-            if (stompClient != null) {
-                stompClient.disconnect();
+            if (stompClient != null) { // si el cliente stomp no es nulo
+                stompClient.disconnect(); // desconecta del servidor
             }
-
             setConnected(false);
             console.log("Disconnected");
         }
 
-        function sendMessage() {
+        function sendMessage() { // envía un mensaje
 
             var from = document.getElementById('from').value;
             var text = document.getElementById('text').value;
+            // envía un mensaje al servidor a través del canal /app/chat
             stompClient.send("/app/chat", {}, JSON.stringify({'from': from, 'text': text}));
         }
 
         function showMessageOutput(messageOutput) {
-
             var response = document.getElementById('response');
             var p = document.createElement('p');
             p.style.wordWrap = 'break-word';
+            // muestra el mensaje en el formato: from: text (time)
             p.appendChild(document.createTextNode(messageOutput.from + ": " + messageOutput.text + " (" + messageOutput.time + ")"));
             response.appendChild(p);
         }
@@ -66,14 +62,13 @@
 <body onload="disconnect()">
 
 <div>
-
-
     <div>
         <input type="text" id="from" placeholder="Choose a nickname"/>
     </div>
     <br/>
     <div>
         <button id="connect" onclick="connect();">Connect</button>
+
         <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button>
     </div>
     <br/>
